@@ -1,6 +1,6 @@
 # miio-go
 
-**Warning** This is a heavily modified version of miio-go!  
+**Warning** This is a heavily modified version of miio-go, all the credits to it's original author Nick Whyte  
 
 Forked from https://github.com/nickw444/miio-go which is no longer maintained  
 
