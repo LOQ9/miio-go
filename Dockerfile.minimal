@@ -1,0 +1,13 @@
+FROM alpine:3.16
+
+RUN apk update && \
+  apk add --no-cache curl ca-certificates && \
+  rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+ADD miio-go /app/miio-go
+RUN chmod u+x /app/miio-go
+
+# Start
+ENTRYPOINT [ "/app/miio-go" ]

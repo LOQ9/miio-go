@@ -1,0 +1,36 @@
+project_name: miio-go
+builds:
+  -
+    main: ./cmd/miio-go
+    id: "miio-go"
+    binary: miio-go
+    env: [CGO_ENABLED=0]
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+nfpms:
+  -
+    maintainer: Marco Santos <me@marcopsantos.com>
+    description: An implementation of the miIO home protocol by Xiaomi written in Golang.
+    homepage: https://github.com/LOQ9/miio-go
+    license: MIT
+    formats:
+    - deb
+    - rpm
+    - apk
+
+archives:
+  -
+    format: binary
+
+dockers:
+  -
+    id: miio-go
+    image_templates:
+    - "ghcr.io/loq9/{{ .ProjectName }}:{{ .Tag }}"
+    - "ghcr.io/loq9/{{ .ProjectName }}:latest"
+    dockerfile: "Dockerfile.minimal"
