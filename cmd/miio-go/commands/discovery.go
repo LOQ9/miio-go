@@ -1,23 +1,25 @@
-package main
+package commands
 
 import (
 	"encoding/hex"
 	"fmt"
 	"time"
 
+	"miio-go/common"
+
 	"github.com/alecthomas/kingpin"
-	"github.com/nickw444/miio-go/common"
 )
 
-func installDiscovery(app *kingpin.Application) {
-	cmd := app.Command("discover", "Discover devices on the local network")
+func (c *Command) InstallDiscovery() {
+	cmd := c.App.Command("discover", "Discover devices on the local network")
 	cmd.Action(func(ctx *kingpin.ParseContext) error {
-		sharedClient.SetDiscoveryInterval(time.Second * 2)
+		c.SharedClient.SetDiscoveryInterval(time.Second * 2)
 
-		sub, err := sharedClient.NewSubscription()
+		sub, err := c.SharedClient.NewSubscription()
 		if err != nil {
 			panic(err)
 		}
+
 		for event := range sub.Events() {
 			switch event.(type) {
 			case common.EventNewDevice:

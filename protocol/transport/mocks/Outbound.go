@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	packet "github.com/nickw444/miio-go/protocol/packet"
+	packet "miio-go/protocol/packet"
 	mock "github.com/stretchr/testify/mock"
 )
 

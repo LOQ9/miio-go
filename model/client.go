@@ -1,14 +1,17 @@
-package miio
+package model
 
 import (
+	"encoding/hex"
 	"net"
 	"sync"
 	"time"
 
-	"github.com/nickw444/miio-go/common"
-	"github.com/nickw444/miio-go/protocol"
-	"github.com/nickw444/miio-go/protocol/tokens"
-	"github.com/nickw444/miio-go/subscription"
+	"miio-go/common"
+
+	"miio-go/subscription"
+
+	"miio-go/protocol"
+	"miio-go/protocol/tokens"
 )
 
 type Client struct {
@@ -19,6 +22,47 @@ type Client struct {
 	discoveryInterval time.Duration
 	quitChan          chan struct{}
 	events            chan interface{}
+}
+
+func CreateClient(local bool, address string, token string, deviceId int) (*Client, error) {
+	addr := net.IPv4bcast
+	if local {
+		addr = net.IPv4(127, 0, 0, 1)
+	}
+
+	if address != "" {
+		addr = net.ParseIP(address)
+	}
+
+	// tokenStore, err := tokens.FromFile("tokens.txt")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	parsedToken, err := hex.DecodeString(token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tokenStore := tokens.New()
+	tokenStore.AddDevice(uint32(deviceId), parsedToken)
+
+	protocolConfig := protocol.ProtocolConfig{
+		BroadcastIP: addr,
+		TokenStore:  tokenStore,
+	}
+
+	if deviceId == 0 {
+		protocolConfig.AutoDevice = true
+	}
+
+	proto, err := protocol.NewProtocol(protocolConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewClientWithProtocol(proto)
 }
 
 // NewClient creates a new default Client with the protocol.

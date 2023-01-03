@@ -3,7 +3,7 @@ package device
 import (
 	"fmt"
 
-	"github.com/nickw444/miio-go/device/product"
+	"miio-go/device/product"
 )
 
 // Classify determines the underlying product of the device and returns an
@@ -21,10 +21,8 @@ func Classify(dev Device) (Device, error) {
 	defer dev.SetProvisional(false)
 
 	switch p {
-	case product.Yeelight:
-		return NewYeelight(dev), nil
-	case product.PowerPlug:
-		return NewPowerPlug(dev), nil
+	case product.AirPurifierV7, product.ZhimiAirpurifierMA2:
+		return NewAirPurifierV7(dev), nil
 	default:
 		return nil, fmt.Errorf("Classify: Unknown device type")
 	}

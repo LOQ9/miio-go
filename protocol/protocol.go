@@ -5,13 +5,15 @@ import (
 	"sync"
 	"time"
 
+	"miio-go/protocol/packet"
+	"miio-go/protocol/tokens"
+	"miio-go/protocol/transport"
+
+	"miio-go/common"
+	"miio-go/device"
+	"miio-go/subscription"
+
 	"github.com/benbjohnson/clock"
-	"github.com/nickw444/miio-go/common"
-	"github.com/nickw444/miio-go/device"
-	"github.com/nickw444/miio-go/protocol/packet"
-	"github.com/nickw444/miio-go/protocol/tokens"
-	"github.com/nickw444/miio-go/protocol/transport"
-	"github.com/nickw444/miio-go/subscription"
 )
 
 type Protocol interface {
@@ -34,6 +36,7 @@ type protocol struct {
 	devicesMutex   sync.RWMutex
 	devices        map[uint32]device.Device
 	ignoredDevices map[uint32]bool
+	autoDevice     bool
 
 	transport     transport.Transport
 	deviceFactory DeviceFactory
@@ -47,6 +50,7 @@ type ProtocolConfig struct {
 	// Required config
 	BroadcastIP net.IP
 	TokenStore  tokens.TokenStore
+	AutoDevice  bool
 
 	// Optional config
 	ListenPort int // Defaults to a random system-assigned port if not provided.
@@ -78,14 +82,14 @@ func NewProtocol(c ProtocolConfig) (Protocol, error) {
 	}
 	broadcastDev := deviceFactory(0, t.NewOutbound(nil, addr), time.Time{}, nil)
 
-	p := newProtocol(clk, t, deviceFactory, cryptoFactory, subscription.NewTarget(), broadcastDev, c.TokenStore)
+	p := newProtocol(clk, t, deviceFactory, cryptoFactory, subscription.NewTarget(), broadcastDev, c.TokenStore, c.AutoDevice)
 	p.start()
 	return p, nil
 }
 
 func newProtocol(c clock.Clock, transport transport.Transport, deviceFactory DeviceFactory,
 	crptoFactory CryptoFactory, target subscription.SubscriptionTarget, broadcastDev device.Device,
-	tokenStore tokens.TokenStore) *protocol {
+	tokenStore tokens.TokenStore, autoDevice bool) *protocol {
 
 	p := &protocol{
 		SubscriptionTarget: target,
@@ -98,6 +102,7 @@ func newProtocol(c clock.Clock, transport transport.Transport, deviceFactory Dev
 		broadcastDev:       broadcastDev,
 		tokenStore:         tokenStore,
 		ignoredDevices:     make(map[uint32]bool),
+		autoDevice:         autoDevice,
 	}
 	return p
 }
@@ -161,9 +166,15 @@ func (p *protocol) Discover() error {
 	p.lastDiscovery = time.Now()
 	return nil
 }
+
+func (p *protocol) getDeviceID(pkt *packet.Packet) device.Device {
+	common.Log.Debugf("Processing incoming packet from %s", pkt.Meta.Addr)
+	return p.getDevice(pkt.Header.DeviceID)
+}
+
 func (p *protocol) process(pkt *packet.Packet) {
 	common.Log.Debugf("Processing incoming packet from %s", pkt.Meta.Addr)
-	if ok, _ := p.ignoredDevices[pkt.Header.DeviceID]; ok {
+	if p.ignoredDevices[pkt.Header.DeviceID] {
 		return
 	}
 
@@ -174,7 +185,11 @@ func (p *protocol) process(pkt *packet.Packet) {
 
 		deviceToken := pkt.Header.Checksum
 		if pkt.HasZeroChecksum() {
-			token, err := p.tokenStore.GetToken(pkt.Header.DeviceID)
+			deviceID := pkt.Header.DeviceID
+			if p.autoDevice {
+				deviceID = uint32(0)
+			}
+			token, err := p.tokenStore.GetToken(deviceID)
 			if err != nil {
 				common.Log.Warnf("Device with id %d is not revealing its token. You must manually collect this token and add it to the store.", pkt.Header.DeviceID)
 				p.ignoredDevices[pkt.Header.DeviceID] = true

@@ -1,8 +1,8 @@
 package subscription
 
 import (
-	"github.com/nickw444/miio-go/subscription/common"
-	"github.com/nickw444/miio-go/subscription/target"
+	"miio-go/subscription/common"
+	"miio-go/subscription/target"
 )
 
 func NewTarget() common.SubscriptionTarget {

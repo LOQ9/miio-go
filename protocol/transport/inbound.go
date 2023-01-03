@@ -3,7 +3,7 @@ package transport
 import (
 	"net"
 
-	"github.com/nickw444/miio-go/protocol/packet"
+	"miio-go/protocol/packet"
 )
 
 // An inbound transport is a channel'ed abstraction around a net.UDPConn.

@@ -3,12 +3,15 @@ package device
 import (
 	"time"
 
-	"github.com/nickw444/miio-go/common"
-	"github.com/nickw444/miio-go/device/product"
+	"miio-go/common"
+	"miio-go/subscription"
+
+	"miio-go/device/product"
+
+	"miio-go/protocol/packet"
+	"miio-go/protocol/transport"
+
 	"github.com/nickw444/miio-go/device/rthrottle"
-	"github.com/nickw444/miio-go/protocol/packet"
-	"github.com/nickw444/miio-go/protocol/transport"
-	"github.com/nickw444/miio-go/subscription"
 )
 
 // baseDevice implements the Device interface.

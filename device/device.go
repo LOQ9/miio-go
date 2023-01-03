@@ -3,10 +3,11 @@ package device
 import (
 	"time"
 
-	"github.com/nickw444/miio-go/common"
-	"github.com/nickw444/miio-go/device/product"
-	"github.com/nickw444/miio-go/protocol/packet"
-	"github.com/nickw444/miio-go/protocol/transport"
+	"miio-go/common"
+	"miio-go/device/product"
+
+	"miio-go/protocol/packet"
+	"miio-go/protocol/transport"
 )
 
 type Device interface {

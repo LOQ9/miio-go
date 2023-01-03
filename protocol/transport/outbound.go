@@ -9,9 +9,11 @@ import (
 
 	"sync"
 
+	"miio-go/protocol/packet"
+
+	"miio-go/common"
+
 	"github.com/benbjohnson/clock"
-	"github.com/nickw444/miio-go/common"
-	"github.com/nickw444/miio-go/protocol/packet"
 )
 
 type OutboundConn interface {

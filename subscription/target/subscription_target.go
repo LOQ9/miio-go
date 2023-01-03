@@ -1,8 +1,8 @@
 package target
 
 import (
-	"github.com/nickw444/miio-go/subscription/common"
-	"github.com/nickw444/miio-go/subscription/subscription"
+	"miio-go/subscription/common"
+	"miio-go/subscription/subscription"
 )
 
 type subscriptionTarget struct {
